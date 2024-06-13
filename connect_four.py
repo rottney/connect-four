@@ -28,8 +28,9 @@ class Game:
 
         for row in self.board:
             print("\t".join(cell for cell in row))
-
-        print(f"\nPlayer {self.current_player} turn")
+        
+        if not self.game_over:
+            print(f"\nPlayer {self.current_player} turn")
     
     def swap_player(self):
         self.current_player = 2 if self.current_player == 1 else 1
@@ -82,10 +83,10 @@ def play(game):
     while not game.game_over:
         game.board = game.history[-1]
 
-        col = input(f"Player {game.current_player} - enter column: ")
+        col = input("Enter column: ")
         while col.lower() == "undo":
             game.undo()
-            col = input(f"Player {game.current_player} - enter column: ")
+            col = input("Enter column: ")
         
         col = game.validate_column(col)
         while game.board[0][col] != BLANK_CELL:
@@ -105,9 +106,9 @@ def play(game):
 
         result = game.has_consecutive_k(4)
         if result:
+            game.game_over = True
             game.animate()
             print(f"Player {game.current_player} wins!")
-            game.game_over = True
         else:
             game.swap_player()
             game.animate()
