@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 NUM_COLUMNS = 7
 NUM_ROWS = 6
 BLANK_CELL = '<>'
@@ -5,13 +7,20 @@ PLAYER_COLORS = {
     1: 'R',
     2: 'Y'
 }
+BLANK_BOARD = [[BLANK_CELL for _ in range(NUM_COLUMNS)] for _ in range(NUM_ROWS)]
 
-class ConnectFour:
+history = []
+
+class Board:
+    def __init__(self, board):
+        self.board = board
+
+class Game:
     def __init__(self):
-        self.board = [[BLANK_CELL for _ in range(NUM_COLUMNS)] for _ in range(NUM_ROWS)]
+        self.board = Board(BLANK_BOARD).board
         self.current_player = 1
         self.game_over = False
-        self.history = []
+        #self.history = [self.board]
 
     def animate(self):
         print()
@@ -38,48 +47,77 @@ class ConnectFour:
         return current in PLAYER_COLORS.values()
 
     def validate_column(self, col):
-        if col.lower() == 'undo':
-            self.undo()
-            
         while col == '' or col not in ''.join([str(i) for i in range(1, NUM_COLUMNS + 1)]):
             col = input(f'Enter a number between 1 and {NUM_COLUMNS}: ')
 
         return int(col) - 1
 
     def undo(self):
-        if self.history == []:
+        #print(self.history)
+        print(self.board)
+        print(history)
+        #if self.history == [BLANK_BOARD]:
+        if history == [BLANK_BOARD]:
             print('There is no history to undo.')
         else:
+            '''
             self.history.pop()
+            self.board = self.history[-1]
+            '''
+            history.pop()
             self.board = history[-1]
-            self.animate(self.board)
-
-    def play(self):
-        self.animate()
-        while not self.game_over:
-            col = input(f'Player {self.current_player} - enter column: ')
-            col = self.validate_column(col)
-
-            while self.board[0][col] != BLANK_CELL:
-                col = input(f'Column {col} is already full. Please choose another column: ')
-                col = self.validate_column(col)
-
-            row = NUM_ROWS - 1
-            while self.board[row][col] != BLANK_CELL:
-                row -= 1
-            self.board[row][col] = PLAYER_COLORS[self.current_player]
-
-            self.history.append(self.board)
             self.animate()
+            game.current_player = 2 if game.current_player == 1 else 1
 
-            result = self.has_consecutive_k(4)
-            if result[0]:
-                print(f'Player {self.current_player} wins!')
-                self.game_over = True
+def play(game):
+    #game.board = Board(game.history[-1]).board
+    history.append(BLANK_BOARD)
+    game.animate()
 
-            self.current_player = 2 if self.current_player == 1 else 1
+    while not game.game_over:
+        #history.append(BLANK_BOARD)
+        #game.board = Board(game.history[-1]).board
+        game.board = history[-1]
+
+        col = input(f'Player {game.current_player} - enter column: ')
+        while col.lower() == 'undo':
+            game.undo()
+            col = input(f'Player {game.current_player} - enter column: ')
+        
+        col = game.validate_column(col)
+
+        while game.board[0][col] != BLANK_CELL:
+            col = input(f'Column {col} is already full. Please choose another column: ')
+            col = game.validate_column(col)
+
+        row = NUM_ROWS - 1
+        while game.board[row][col] != BLANK_CELL:
+            row -= 1
+        print('history before move')
+        print(history)
+        current_board = deepcopy(game.board)
+        history[-1] = current_board
+        game.board[row][col] = PLAYER_COLORS[game.current_player]
+
+        #game.history.append(game.board)
+        print('history after move')
+        print(history)
+        print('board')
+        print(game.board)
+        history.append(game.board)
+        print('history after append')
+        print(history)
+        #game.history.append(game.history[-1])
+        game.animate()
+
+        result = game.has_consecutive_k(4)
+        if result[0]:
+            print(f'Player {game.current_player} wins!')
+            game.game_over = True
+
+        game.current_player = 2 if game.current_player == 1 else 1
 
 
 if __name__ == "__main__":
-    game = ConnectFour()
-    game.play()
+    game = Game()
+    play(game)
