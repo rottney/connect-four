@@ -9,18 +9,12 @@ PLAYER_COLORS = {
 }
 BLANK_BOARD = [[BLANK_CELL for _ in range(NUM_COLUMNS)] for _ in range(NUM_ROWS)]
 
-history = []
-
-class Board:
-    def __init__(self, board):
-        self.board = board
-
 class Game:
     def __init__(self):
-        self.board = Board(BLANK_BOARD).board
+        self.board = deepcopy(BLANK_BOARD)
         self.current_player = 1
         self.game_over = False
-        #self.history = [self.board]
+        self.history = [self.board]
 
     def animate(self):
         print()
@@ -53,31 +47,19 @@ class Game:
         return int(col) - 1
 
     def undo(self):
-        #print(self.history)
-        print(self.board)
-        print(history)
-        #if self.history == [BLANK_BOARD]:
-        if history == [BLANK_BOARD]:
+        if self.history == [BLANK_BOARD]:
             print('There is no history to undo.')
         else:
-            '''
             self.history.pop()
             self.board = self.history[-1]
-            '''
-            history.pop()
-            self.board = history[-1]
             self.animate()
             game.current_player = 2 if game.current_player == 1 else 1
 
 def play(game):
-    #game.board = Board(game.history[-1]).board
-    history.append(BLANK_BOARD)
     game.animate()
 
     while not game.game_over:
-        #history.append(BLANK_BOARD)
-        #game.board = Board(game.history[-1]).board
-        game.board = history[-1]
+        game.board = game.history[-1]
 
         col = input(f'Player {game.current_player} - enter column: ')
         while col.lower() == 'undo':
@@ -93,21 +75,13 @@ def play(game):
         row = NUM_ROWS - 1
         while game.board[row][col] != BLANK_CELL:
             row -= 1
-        print('history before move')
-        print(history)
+        
         current_board = deepcopy(game.board)
-        history[-1] = current_board
+        game.history[-1] = current_board
+
         game.board[row][col] = PLAYER_COLORS[game.current_player]
 
-        #game.history.append(game.board)
-        print('history after move')
-        print(history)
-        print('board')
-        print(game.board)
-        history.append(game.board)
-        print('history after append')
-        print(history)
-        #game.history.append(game.history[-1])
+        game.history.append(game.board)
         game.animate()
 
         result = game.has_consecutive_k(4)
